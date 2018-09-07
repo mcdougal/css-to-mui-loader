@@ -1,6 +1,6 @@
 {
   "name": "css-to-mui-loader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Webpack loader for converting CSS to JSS for Material UI",
   "keywords": [
     "webpack",
