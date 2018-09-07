@@ -255,3 +255,6 @@ export default (theme) => {
 ## Help out
 
 Pull requests, issues, complaints and suggestions are all welcome.
+
+[npm]: https://img.shields.io/npm/v/css-loader.svg
+[npm-url]: https://npmjs.com/package/css-to-mui-loader
