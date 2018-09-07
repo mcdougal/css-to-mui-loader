@@ -1,0 +1,13 @@
+# Dependencies
+node_modules
+
+# Testing
+coverage
+
+# Temporary editor files
+.DS_Store
+*~
+*.temp
+
+# Logs
+npm-debug.log*

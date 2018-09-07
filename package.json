@@ -1,0 +1,40 @@
+{
+  "name": "css-to-mui-loader",
+  "version": "1.0.0",
+  "description": "Webpack loader for converting CSS to JSS for Material UI",
+  "keywords": [
+    "webpack",
+    "loader",
+    "css",
+    "jss",
+    "material",
+    "ui"
+  ],
+  "license": "MIT",
+  "author": "Cedric McDougal",
+  "main": "css-to-mui-loader.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcdougal/css-to-mui-loader.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mcdougal/css-to-mui-loader/issues"
+  },
+  "homepage": "https://github.com/mcdougal/css-to-mui-loader#readme",
+  "scripts": {
+    "lint": "eslint *.js",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "eslint": "^5.5.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^3.0.1",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-prettier": "^2.6.2",
+    "jest": "^23.5.0",
+    "prettier": "^1.14.2"
+  },
+  "dependencies": {
+    "css": "^2.2.4"
+  }
+}
