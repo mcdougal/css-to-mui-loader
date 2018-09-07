@@ -7,7 +7,9 @@ Webpack loader for converting CSS to JSS, designed specifically for [Material UI
 
 ## Install
 
+```bash
 npm install --save-dev css-to-mui-loader
+```
 
 ## Usage
 
