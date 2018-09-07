@@ -256,5 +256,5 @@ export default (theme) => {
 
 Pull requests, issues, complaints and suggestions are all welcome.
 
-[npm-image]: https://img.shields.io/npm/v/vmd.svg?style=flat-square
+[npm-image]: https://img.shields.io/npm/v/css-to-mui-loader.svg?style=flat-square
 [npm-url]: https://npmjs.org/package/css-to-mui-loader
