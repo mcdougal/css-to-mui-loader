@@ -11,6 +11,7 @@ module.exports = {
     'arrow-parens': [`error`, `always`],
     'func-names': `off`,
     'func-style': [`error`, `expression`, { allowArrowFunctions: true }],
+    'global-require': `off`,
     'import/first': `error`,
     'import/order': [
       `error`,

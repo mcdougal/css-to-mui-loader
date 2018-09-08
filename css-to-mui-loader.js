@@ -1,5 +1,4 @@
 const css = require(`css`);
-const prettier = require(`prettier`);
 
 const hyphenToCamelCase = function(s) {
   return s.replace(/-([a-z])/g, function(g) {
@@ -415,16 +414,18 @@ module.exports = function cssToMuiLoader(source) {
   const rules = parseRules(ast.stylesheet.rules);
   const transpiled = transpile(rules);
 
-  // Formatting makes test cases easier to understand
-  const formatted = prettier.format(transpiled, {
-    parser: `babylon`,
-    arrowParens: `always`,
-    bracketSpacing: true,
-    semi: true,
-    singleQuote: true,
-    tabWidth: 2,
-    trailingComma: `all`,
-  });
+  if (process.env.CSS_TO_MUI_TEST) {
+    // Formatting makes test cases easier to understand
+    return require(`prettier`).format(transpiled, {
+      parser: `babylon`,
+      arrowParens: `always`,
+      bracketSpacing: true,
+      semi: true,
+      singleQuote: true,
+      tabWidth: 2,
+      trailingComma: `all`,
+    });
+  }
 
-  return formatted;
+  return transpiled;
 };
