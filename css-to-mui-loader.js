@@ -161,6 +161,45 @@ const transpileChildClasses = function(childRules) {
     .join(``);
 };
 
+const transpileRoot = function(root) {
+  if (!root) {
+    return ``;
+  }
+
+  return root.declarations
+    .map(function(declaration) {
+      const property = transpileCustomVariableName(declaration.property);
+      const value = transpileValue(declaration.value);
+
+      return `const ${property} = ${value};`;
+    })
+    .join(``);
+};
+
+/**
+ * Return a string of JavaScript code that presents the given keyframes
+ * rule as an entry in a JavaScript object.
+ */
+const transpileKeyframes = function(keyframes) {
+  const transpiledKeyframes = keyframes.keyframes.map(function(keyframe) {
+    return `
+      '${keyframe.values.join(`,`)}': {
+        ${transpileDeclarations(keyframe.declarations)}
+      },
+    `;
+  });
+
+  return `
+    '@${keyframes.vendor || ``}keyframes ${keyframes.name}': {
+      ${transpiledKeyframes.join(``)}
+    },
+  `;
+};
+
+/**
+ * Return a string of JavaScript code that presents the given CSS rule
+ * as an entry in a JavaScript object.
+ */
 const transpileRule = function(rule) {
   if (!rule.selector.startsWith(`.`)) {
     throw new Error(
@@ -185,6 +224,10 @@ const transpileRule = function(rule) {
   return transpiled.join(``);
 };
 
+/**
+ * Return a string of JavaScript code that presents the given media query
+ * rule as an entry in a JavaScript object.
+ */
 const transpileMedia = function(media) {
   // Matches lines similar to: $(theme.palette.primary.main)
   const match = /^\$\((.+)\)$/.exec(media.selector.trim());
@@ -196,105 +239,47 @@ const transpileMedia = function(media) {
     );
   }
 
+  const transpiledRules = Object.values(media.rules).map(transpileRule);
+
   return `
     [${match[1]}]: {
-      ${transpileRules(media.rules)}
+      ${transpiledRules.join(``)}
     },
   `;
 };
 
-const transpileRules = function(rules) {
-  return Array.from(rules.values())
-    .map(function(rule) {
-      if (rule.type === `media`) {
-        return transpileMedia(rule);
-      }
+/**
+ * Return a string of JavaScript code that presents the given CSS rules
+ * as a Material UI JSS function.
+ */
+const transpile = function(rules, mediaQueries, keyframes) {
+  const root = rules[`:root`];
+  const rulesWithoutRoot = Object.assign({}, rules);
+  delete rulesWithoutRoot[`:root`];
 
-      return transpileRule(rule);
-    })
-    .join(``);
-};
-
-const transpileRoot = function(root) {
-  if (!root) {
-    return ``;
-  }
-
-  return root.declarations
-    .map(function(declaration) {
-      const property = transpileCustomVariableName(declaration.property);
-      const value = transpileValue(declaration.value);
-
-      return `const ${property} = ${value};`;
-    })
-    .join(``);
-};
-
-const transpile = function(rules) {
-  const root = rules.get(`:root`);
-
-  let rulesWithoutRoot;
-
-  if (!root) {
-    rulesWithoutRoot = rules;
-  } else {
-    rulesWithoutRoot = new Map();
-
-    rules.forEach(function(rule, selector) {
-      if (selector !== `:root`) {
-        rulesWithoutRoot.set(selector, rule);
-      }
-    });
-  }
+  const transpiledKeyframes = Object.values(keyframes).map(transpileKeyframes);
+  const transpiledRules = Object.values(rulesWithoutRoot).map(transpileRule);
+  const transpiledMedia = Object.values(mediaQueries).map(transpileMedia);
 
   return `
     module.exports = function cssToMuiLoader(theme) {
       ${transpileRoot(root)}
       return {
-        ${transpileRules(rulesWithoutRoot)}
+        ${transpiledKeyframes.join(``)}
+        ${transpiledRules.join(``)}
+        ${transpiledMedia.join(``)}
       };
     };
   `;
 };
 
-const mergeRules = function(rules1, rules2) {
-  const newRules = new Map();
-
-  rules1.forEach(function(rule, selector) {
-    newRules.set(selector, rule);
-  });
-
-  rules2.forEach(function(rule, selector) {
-    if (newRules.has(selector)) {
-      const currRule = newRules.get(selector);
-      currRule.declarations = currRule.declarations.concat(rule.declarations);
-    } else {
-      newRules.set(selector, rule);
-    }
-  });
-
-  return newRules;
-};
-
 /**
- * Extract rules from the given CSS AST. Return a structure that is closer
- * to the final JSS output (for example, move psuedo-classes directly under
- * the associated selectors).
+ * Extract the rules from the source CSS AST. Return a structure that
+ * is closer to the final JSS output (for example, make psuedo-classes
+ * child rules of their associated parent selectors).
  */
 const parseRules = function(rules) {
   const parsedRules = {};
-
-  const getOrCreateMedia = function(selector) {
-    if (!parsedRules[selector]) {
-      parsedRules[selector] = {
-        type: `media`,
-        selector: selector,
-        rules: new Map(),
-      };
-    }
-
-    return parsedRules[selector];
-  };
 
   const getOrCreateRule = function(selector) {
     if (!parsedRules[selector]) {
@@ -309,10 +294,7 @@ const parseRules = function(rules) {
   };
 
   rules.forEach(function(rule) {
-    if (rule.type === `media`) {
-      const currMedia = getOrCreateMedia(rule.media);
-      currMedia.rules = mergeRules(currMedia.rules, parseRules(rule.rules));
-    } else if (rule.type === `rule`) {
+    if (rule.type === `rule`) {
       const declarations = rule.declarations
         .filter(function(declaration) {
           return declaration.type === `declaration`;
@@ -363,31 +345,61 @@ const parseRules = function(rules) {
     }
   });
 
-  // Use ordered map in order to place media queries at the end to ensure their
-  // specificity is higher than the base rule
-  const parsedRulesMap = new Map();
+  return parsedRules;
+};
 
-  // Add the non-media queries
-  Object.entries(parsedRules).forEach(function(entry) {
-    const selector = entry[0];
-    const rule = entry[1];
+/**
+ * Extract the media queries from the source CSS AST. Merge the child rules
+ * of media queries with the same names.
+ */
+const parseMediaQueries = function(rules) {
+  const parsedMedia = {};
 
-    if (rule.type !== `media`) {
-      parsedRulesMap.set(selector, rule);
-    }
-  });
-
-  // Add the media queries
-  Object.entries(parsedRules).forEach(function(entry) {
-    const selector = entry[0];
-    const rule = entry[1];
-
+  rules.forEach(function(rule) {
     if (rule.type === `media`) {
-      parsedRulesMap.set(selector, rule);
+      if (!parsedMedia[rule.media]) {
+        parsedMedia[rule.media] = {
+          selector: rule.media,
+          rules: {},
+        };
+      }
+
+      const currMedia = parsedMedia[rule.media];
+
+      // Parse the child rules and merge them with the existing rules
+      Object.entries(parseRules(rule.rules)).forEach(function(entry) {
+        const selector = entry[0];
+        const newRule = entry[1];
+        const currRule = currMedia.rules[selector];
+
+        if (currRule) {
+          currRule.declarations = currRule.declarations.concat(
+            newRule.declarations
+          );
+        } else {
+          currMedia.rules[selector] = newRule;
+        }
+      });
     }
   });
 
-  return parsedRulesMap;
+  return parsedMedia;
+};
+
+/**
+ * Extract the keyframes from the source CSS AST. If there are multiple
+ * keyframes with the same name, the last one is used.
+ */
+const parseKeyframes = function(rules) {
+  const parsedKeyframes = {};
+
+  rules.forEach(function(rule) {
+    if (rule.type === `keyframes`) {
+      parsedKeyframes[rule.name] = rule;
+    }
+  });
+
+  return parsedKeyframes;
 };
 
 const handleSyntaxError = function(source, e) {
@@ -448,7 +460,10 @@ module.exports = function cssToMuiLoader(source) {
   }
 
   const rules = parseRules(ast.stylesheet.rules);
-  const transpiled = transpile(rules);
+  const mediaQueries = parseMediaQueries(ast.stylesheet.rules);
+  const keyframes = parseKeyframes(ast.stylesheet.rules);
+
+  const transpiled = transpile(rules, mediaQueries, keyframes);
 
   if (process.env.CSS_TO_MUI_TEST) {
     // Formatting makes test cases easier to understand

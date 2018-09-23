@@ -30,6 +30,24 @@ module.exports = function cssToMuiLoader(theme) {
   expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
 });
 
+it(`supports rule names with dashes`, () => {
+  const css = `
+.test-dash {
+  padding: 10px;
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    'test-dash': { padding: \`10px\` },
+  };
+};
+  `;
+
+  expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
+});
+
 it(`throws an error on non-class selectors`, () => {
   const css = `
 #test {
@@ -654,6 +672,148 @@ module.exports = function cssToMuiLoader(theme) {
   expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
 });
 
+it(`supports basic keyframes`, () => {
+  const css = `
+@keyframes my-animation {
+  0% { background: $(theme.palette.common.white); }
+  100% { background: $(theme.palette.common.black); }
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    '@keyframes my-animation': {
+      '0%': {
+        background: \`$\{theme.palette.common.white}\`,
+      },
+
+      '100%': {
+        background: \`$\{theme.palette.common.black}\`,
+      },
+    },
+  };
+};
+  `;
+
+  expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
+});
+
+it(`supports keyframes with multiple percentages`, () => {
+  const css = `
+@keyframes my-animation {
+  0%, 75% { background: $(theme.palette.common.white); }
+  25%, 90%, 100% { background: $(theme.palette.common.black); }
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    '@keyframes my-animation': {
+      '0%,75%': {
+        background: \`$\{theme.palette.common.white}\`,
+      },
+
+      '25%,90%,100%': {
+        background: \`$\{theme.palette.common.black}\`,
+      },
+    },
+  };
+};
+  `;
+
+  expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
+});
+
+it(`supports keyframes with multiple declarations`, () => {
+  const css = `
+@keyframes my-animation {
+  0% {
+    background: $(theme.palette.common.white);
+    padding: 1su;
+  }
+
+  100% {
+    background: $(theme.palette.common.black);
+    padding: 2su;
+  }
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    '@keyframes my-animation': {
+      '0%': {
+        background: \`$\{theme.palette.common.white}\`,
+        padding: \`$\{theme.spacing.unit * 1}px\`,
+      },
+
+      '100%': {
+        background: \`$\{theme.palette.common.black}\`,
+        padding: \`$\{theme.spacing.unit * 2}px\`,
+      },
+    },
+  };
+};
+  `;
+
+  expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
+});
+
+it(`overrides keyframes with the same name`, () => {
+  const css = `
+@keyframes my-animation {
+  0% { background: $(theme.palette.common.white); }
+}
+@keyframes my-animation {
+  100% { background: $(theme.palette.common.black); }
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    '@keyframes my-animation': {
+      '100%': {
+        background: \`$\{theme.palette.common.black}\`,
+      },
+    },
+  };
+};
+  `;
+
+  expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
+});
+
+it(`supports keyframes with vendor prefixes`, () => {
+  const css = `
+@-webkit-keyframes my-animation {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    '@-webkit-keyframes my-animation': {
+      '0%': {
+        opacity: \`0\`,
+      },
+
+      '100%': {
+        opacity: \`1\`,
+      },
+    },
+  };
+};
+  `;
+
+  expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
+});
+
 it(`supports media queries that are defined once`, () => {
   const css = `
 .test {
@@ -671,6 +831,7 @@ it(`supports media queries that are defined once`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: { padding: \`20px\` },
+
     [theme.breakpoints.down('xs')]: {
       test: { padding: \`5px\` },
     },
@@ -715,6 +876,7 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     test1: { padding: \`20px\` },
     test2: { padding: \`50px\` },
+
     [theme.breakpoints.down('xs')]: {
       test1: { padding: \`5px\`, margin: \`0\` },
       test2: { padding: \`10px\` },
@@ -896,6 +1058,7 @@ module.exports = function cssToMuiLoader(theme) {
         background: \`pink\`,
       },
     },
+
     [theme.breakpoints.down('xs')]: {
       test: {
         '&:hover': {
