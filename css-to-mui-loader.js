@@ -236,7 +236,7 @@ const transpile = function(rules) {
   delete rulesWithoutRoot[`:root`];
 
   return `
-    export default (theme) => {
+    module.exports = function cssToMuiLoader(theme) {
       ${transpileRoot(root)}
       return {
         ${transpileRules(rulesWithoutRoot)}
