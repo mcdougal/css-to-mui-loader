@@ -1,9 +1,9 @@
 # css-to-mui-loader
 [![NPM version][npm-image]][npm-url]
 
-Webpack loader for converting CSS to JSS, designed specifically for [Material UI](https://github.com/mui-org/material-ui).
+Webpack loader for converting CSS to JSS, designed specifically for use with [Material UI](https://github.com/mui-org/material-ui).
 
-[Install](#install) | [Usage](#usage) | [Description](#description) | [Features](#features) | [License](#license) | [Help out](#help-out)
+[Install](#install) | [Usage](#usage) | [Description](#description) | [Features](#features) | [Linting](#linting) | [License](#license) | [Help out](#help-out)
 
 ## Install
 
@@ -43,7 +43,7 @@ module.exports = {
 ```js
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
-import styles from './styles';
+import styles from './styles.css';
 
 const MyComponent = withStyles(styles)(({ classes }) => (
   <Button className={classes.button}>
@@ -56,96 +56,119 @@ const MyComponent = withStyles(styles)(({ classes }) => (
 
 The `css-to-mui-loader` allows you to write external CSS files then import them for use in your Material UI components. It provides shortcuts for accessing the Material UI theme within the CSS itself.
 
+Why?
+
+1. CSS is more concise
+2. Designers don't want to write JS
+3. You can copy/paste CSS directly from Chrome Inspector
+4. You still get component-scoped CSS and a centralized theme
+
 ## Features
 
-### Write CSS, get JSS
-
-**Input**
 ```css
-.test {
-  padding 10px;
+/* Provides custom unit for Material UI spacing */
+.spacing {
+  padding: 10su; /* Equal to theme.spacing.unit * 10 */
 }
-```
 
-**Output**
-```js
-export default (theme) => {
-  return {
-    test: { padding: `10px` },
-  };
-};
-```
+/* Provides access to the Material UI theme */
+.theme {
+  color: $(theme.palette.primary.main);
+  z-index: $(theme.zIndex.appBar);
+}
 
-### Multiple/child selectors
+/* Supports media queries using the Material UI theme breakpoints */
+@media $(theme.breakpoints.down('sm')) {
+  .media {
+    display: none;
+  }
+}
 
-**Input**
-```css
-.test1.test2 .test3 * {
+/* Allows Material UI theme objects to be included as mixins */
+.mixins {
+  -mui-mixins: theme.typography.display4, theme.shape;
+}
+
+/* Supports classes, child selectors and pseudo-classes */
+.parent.qualifier .child:hover * {
   padding: 10px;
 }
+
+/* Supports CSS variables */
+:root {
+  --small-spacing: 2su;
+}
+
+.variables {
+  margin: var(--small-spacing);
+}
+
+/* Supports keyframes */
+@keyframes my-animation {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.keyframes {
+  animation: my-animation 1s ease-in-out;
+}
 ```
 
-**Output**
+Using the `css-to-mui-loader`, the example above would get transpiled to the following JS:
+
 ```js
-export default (theme) => {
+module.exports = function cssToMuiLoader(theme) {
+  const smallSpacing = `${theme.spacing.unit * 2}px`;
+
   return {
-    test2: {},
-    test3: {},
-    test1: {
-      '&$test2 $test3' *: {
+    '@keyframes my-animation': {
+      '0%': {
+        opacity: `0`,
+      },
+      '100%': {
+        opacity: `1`,
+      },
+    },
+    spacing: { padding: `${theme.spacing.unit * 10}px` },
+    theme: {
+      color: `${theme.palette.primary.main}`,
+      zIndex: `${theme.zIndex.appBar}`,
+    },
+    mixins: { ...theme.typography.display4, ...theme.shape },
+    qualifier: {},
+    child: {},
+    parent: {
+      '&$qualifier $child:hover *': {
         padding: `10px`,
       },
     },
-  };
-};
-```
-
-### Pseudo-classes
-
-**Input**
-```css
-.test:hover {
-  background: pink;
-}
-```
-
-**Output**
-```js
-export default (theme) => {
-  return {
-    test: {
-      '&:hover': {
-        background: `pink`,
-      },
+    variables: { margin: `${smallSpacing}` },
+    keyframes: { animation: `my-animation 1s ease-in-out` },
+    [theme.breakpoints.down('sm')]: {
+      media: { display: `none` },
     },
   };
 };
 ```
 
-### Custom unit for Material UI spacing
+## Linting
 
-**Input**
-```css
-.test {
-  padding: 10su;
-}
-```
+Some linters might complain about the custom syntax, but there are usually rules you can enable to address this. For example, the following `.stylelintrc` for [stylelint](https://github.com/stylelint/stylelint) does not raise any errors with the custom `css-to-mui-loader` syntax:
 
-**Output**
-```js
-export default (theme) => {
-  return {
-    test: { padding: `${theme.spacing.unit * 10}px` },
-  };
-};
-```
-
-Note: You may want to configure [stylelint](https://github.com/stylelint/stylelint) to ignore this unit:
-
-**.stylelintrc**
 ```json
 {
+  "extends": "stylelint-config-standard",
+  "plugins": [
+    "stylelint-order"
+  ],
   "rules": {
+    "function-name-case": null,
+    "property-no-unknown": [
+      true,
+      {
+        "ignoreProperties": ["-mui-mixins"]
+      }
+    ],
     "unit-no-unknown": [
       true,
       {
@@ -154,98 +177,6 @@ Note: You may want to configure [stylelint](https://github.com/stylelint/styleli
     ]
   }
 }
-```
-
-### Access to the Material UI theme
-
-**Input**
-```css
-.test {
-  color: $(theme.palette.primary.main);
-}
-```
-
-**Output**
-```js
-export default (theme) => {
-  return {
-    test: { color: `${theme.palette.primary.main}` },
-  };
-};
-```
-
-Note: You can write any JavaScript you want in the `$(...)`. Since the theme is provided as a variable in the output, this construct is a convenient way to access it.
-
-### CSS variables
-
-**Input**
-```css
-:root {
-  --my-color: blue;
-}
-
-.test {
-  background: var(--my-color);
-}
-```
-
-**Output**
-```js
-export default (theme) => {
-  const myColor = `blue`;
-  return {
-    test: { background: `${myColor}` },
-  };
-};
-```
-
-### Media queries using Material UI's breakpoints
-
-**Input**
-```css
-.test {
-  padding: 20px;
-}
-
-@media $(theme.breakpoints.down('xs')) {
-  .test {
-    padding: 5px;
-  }
-}
-```
-
-**Output**
-```js
-export default (theme) => {
-  return {
-    test: { padding: `20px` },
-    [theme.breakpoints.down('xs')]: {
-      test: { padding: `5px` },
-    },
-  };
-};
-```
-
-### Mixins
-
-**Input**
-```css
-.test {
-  -mui-mixins: theme.mixins.customMixin;
-  padding: 10px;
-}
-```
-
-**Output**
-```js
-export default (theme) => {
-  return {
-    test: {
-      ...theme.mixins.customMixin,
-      padding: \`10px\`,
-    },
-  };
-};
 ```
 
 ## License
