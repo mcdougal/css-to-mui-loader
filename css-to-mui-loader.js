@@ -204,7 +204,7 @@ const transpileMedia = function(media) {
 };
 
 const transpileRules = function(rules) {
-  return Object.values(rules)
+  return Array.from(rules.values())
     .map(function(rule) {
       if (rule.type === `media`) {
         return transpileMedia(rule);
@@ -231,9 +231,21 @@ const transpileRoot = function(root) {
 };
 
 const transpile = function(rules) {
-  const root = rules[`:root`];
-  const rulesWithoutRoot = Object.assign({}, rules);
-  delete rulesWithoutRoot[`:root`];
+  const root = rules.get(`:root`);
+
+  let rulesWithoutRoot;
+
+  if (!root) {
+    rulesWithoutRoot = rules;
+  } else {
+    rulesWithoutRoot = new Map();
+
+    rules.forEach(function(rule, selector) {
+      if (selector !== `:root`) {
+        rulesWithoutRoot.set(selector, rule);
+      }
+    });
+  }
 
   return `
     module.exports = function cssToMuiLoader(theme) {
@@ -246,18 +258,18 @@ const transpile = function(rules) {
 };
 
 const mergeRules = function(rules1, rules2) {
-  const newRules = Object.assign({}, rules1);
+  const newRules = new Map();
 
-  Object.entries(rules2).forEach(function(entry) {
-    const key = entry[0];
-    const rule = entry[1];
+  rules1.forEach(function(rule, selector) {
+    newRules.set(selector, rule);
+  });
 
-    if (newRules[key]) {
-      newRules[key].declarations = newRules[key].declarations.concat(
-        rule.declarations
-      );
+  rules2.forEach(function(rule, selector) {
+    if (newRules.has(selector)) {
+      const currRule = newRules.get(selector);
+      currRule.declarations = currRule.declarations.concat(rule.declarations);
     } else {
-      newRules[key] = rule;
+      newRules.set(selector, rule);
     }
   });
 
@@ -277,7 +289,7 @@ const parseRules = function(rules) {
       parsedRules[selector] = {
         type: `media`,
         selector: selector,
-        rules: {},
+        rules: new Map(),
       };
     }
 
@@ -351,7 +363,31 @@ const parseRules = function(rules) {
     }
   });
 
-  return parsedRules;
+  // Use ordered map in order to place media queries at the end to ensure their
+  // specificity is higher than the base rule
+  const parsedRulesMap = new Map();
+
+  // Add the non-media queries
+  Object.entries(parsedRules).forEach(function(entry) {
+    const selector = entry[0];
+    const rule = entry[1];
+
+    if (rule.type !== `media`) {
+      parsedRulesMap.set(selector, rule);
+    }
+  });
+
+  // Add the media queries
+  Object.entries(parsedRules).forEach(function(entry) {
+    const selector = entry[0];
+    const rule = entry[1];
+
+    if (rule.type === `media`) {
+      parsedRulesMap.set(selector, rule);
+    }
+  });
+
+  return parsedRulesMap;
 };
 
 const handleSyntaxError = function(source, e) {

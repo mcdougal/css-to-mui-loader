@@ -219,13 +219,14 @@ it(`combines declarations from the same rule defined multiple times`, () => {
 
 .test {
   background: red;
+  margin: 25px;
 }
   `;
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { margin: \`20px\`, background: \`red\` },
+    test: { margin: \`20px\`, background: \`red\`, margin: \`25px\` },
   };
 };
   `;
@@ -713,11 +714,11 @@ it(`supports media queries that are defined more than once`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test1: { padding: \`20px\` },
+    test2: { padding: \`50px\` },
     [theme.breakpoints.down('xs')]: {
       test1: { padding: \`5px\`, margin: \`0\` },
       test2: { padding: \`10px\` },
     },
-    test2: { padding: \`50px\` },
   };
 };
   `;
