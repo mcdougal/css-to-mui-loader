@@ -13,8 +13,6 @@ npm install css-to-mui-loader
 
 ## Usage
 
-The `css-to-mui-loader` currently uses `export default` in its output, so you'll need to chain an appropriate loader in your CSS rule (such as [babel-loader](https://github.com/babel/babel-loader)).
-
 **webpack.config.js**
 ```js
 module.exports = {
@@ -22,7 +20,7 @@ module.exports = {
     rules: [
       {
         test: /\.css$/,
-        use: [ 'babel-loader', 'css-to-mui-loader' ]
+        use: [ 'css-to-mui-loader' ]
       }
     ]
   }
