@@ -1,6 +1,12 @@
 1.0.3 / PENDING
 ===============
 
+**Notable:**
+
+* `babel-loader` is no longer needed to handle the output of `css-to-mui-loader`
+
+**Other:**
+
 * Only run `prettier` if the `CSS_TO_MUI_TEST` environment variable is non-null.
   Code formatting was just used to make expected test output easier to read, but
   it is not needed otherwise.
