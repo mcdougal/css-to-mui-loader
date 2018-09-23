@@ -7,6 +7,8 @@
 
 **Other:**
 
+* Fixed a bug where defining a media query multiple times would cause it to render
+  above other rules, resulting in specificity problems
 * Only run `prettier` if the `CSS_TO_MUI_TEST` environment variable is non-null.
   Code formatting was just used to make expected test output easier to read, but
   it is not needed otherwise.
