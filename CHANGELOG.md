@@ -9,7 +9,6 @@
 ## 1.1.0
 ###### Sept 22, 2018
 
-- `babel-loader` is no longer needed to handle the output of `css-to-mui-loader`
 - Added support for `@keyframes`
 - Fixed a bug where defining a media query multiple times would cause it to render
   above other rules, resulting in specificity problems
