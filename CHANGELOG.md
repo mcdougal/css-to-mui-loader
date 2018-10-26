@@ -1,7 +1,13 @@
+## 1.2.1
+###### Oct 26, 2018
+
+- Updated README to reflect that ES5 compatibility has not been reached and
+  babel-loader is still required
+
 ## 1.2.0
 ###### Oct 26, 2018
 
-- Now ES5 compatible. Removed the following from loader output:
+- Closer to full ES5 compatibility. Removed the following from loader output:
   - template literals
   - object rest spread
 - Fixed a bug where comments in keyframes would cause the loader to crash

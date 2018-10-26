@@ -45,12 +45,18 @@ module.exports = {
     rules: [
       {
         test: /\.css$/,
-        use: [ 'css-to-mui-loader' ]
+        use: [ 'babel-loader', 'css-to-mui-loader' ]
       }
     ]
   }
 }
 ```
+
+**NOTE:** `css-to-mui-loader` output currently relies on ES2015
+[computed property names](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names),
+so for the time being you will have to run the output through a transpiling
+loader, such as the `babel-loader`. I have plans to remove this requirement
+but I'm not quite there yet.
 
 ## Description
 
@@ -127,8 +133,7 @@ Supports keyframes
 ```
 
 If you want to know what the loader output looks like,
-[take a look at the tests](/css-to-mui-loader.test.js). The loader output is
-compatible with ES5, so `css-to-mui-loader` can be used with older browsers.
+[take a look at the tests](/css-to-mui-loader.test.js).
 
 ## Linting
 
