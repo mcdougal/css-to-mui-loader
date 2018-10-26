@@ -1,4 +1,5 @@
-## 1.1.1 / Unpublished
+## 1.2.0
+###### Oct 26, 2018
 
 - Improved compatibility with older JS environments by removing:
   - template literals
