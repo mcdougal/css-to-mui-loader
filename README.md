@@ -13,20 +13,6 @@ npm install css-to-mui-loader
 
 ## Usage
 
-**webpack.config.js**
-```js
-module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: [ 'css-to-mui-loader' ]
-      }
-    ]
-  }
-}
-```
-
 **styles.css**
 ```css
 .button {
@@ -39,7 +25,7 @@ module.exports = {
 }
 ```
 
-**component.js**
+**MyComponent.js**
 ```js
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
@@ -50,6 +36,20 @@ const MyComponent = withStyles(styles)(({ classes }) => (
     Click Me
   </Button>
 ));
+```
+
+**webpack.config.js**
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [ 'css-to-mui-loader' ]
+      }
+    ]
+  }
+}
 ```
 
 ## Description
