@@ -1,7 +1,7 @@
 ## 1.2.0
 ###### Oct 26, 2018
 
-- Improved compatibility with older JS environments by removing:
+- Now ES5 compatible. Removed the following from loader output:
   - template literals
   - object rest spread
 - Fixed a bug where comments in keyframes would cause the loader to crash
