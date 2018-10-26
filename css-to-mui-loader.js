@@ -1,6 +1,36 @@
 const css = require(`css`);
 
 /**
+ * Object.assign polyfill, used to merge mixins with css rules. Taken from:
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Polyfill
+ */
+const OBJECT_ASSIGN_POLYFILL = `
+  function cssToMuiLoaderAssign(target, varArgs) { // .length of function is 2
+    'use strict';
+    if (target == null) { // TypeError if undefined or null
+      throw new TypeError('Cannot convert undefined or null to object');
+    }
+
+    var to = Object(target);
+
+    for (var index = 1; index < arguments.length; index++) {
+      var nextSource = arguments[index];
+
+      if (nextSource != null) { // Skip over if undefined or null
+        for (var nextKey in nextSource) {
+          // Avoid bugs when hasOwnProperty is shadowed
+          if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+            to[nextKey] = nextSource[nextKey];
+          }
+        }
+      }
+    }
+
+    return to;
+  }
+`;
+
+/**
  * CSS properties need to be converted to camelCase to work with JSS. We also
  * may need to convert user-defined variables to camelCase so they can be used
  * as JavaScript variables.
@@ -75,10 +105,7 @@ const consumeCustomUnit = function(s) {
 const consumeCssVariable = function(s) {
   if (s.startsWith(`var(`) && s.indexOf(`)`) !== -1) {
     const part = s.slice(0, s.indexOf(`)`) + 1);
-    const varName = part
-      .slice(4)
-      .slice(0, -1)
-      .trim();
+    const varName = part.slice(4).slice(0, -1);
 
     return {
       newValue: transpileCustomVariableName(varName),
@@ -180,13 +207,13 @@ const transpileDeclarations = function(declarations) {
     return declaration.property === `-mui-mixins`;
   });
 
-  let mixinsStr = ``;
+  let mixinsStr = null;
 
   if (mixins) {
     mixinsStr = mixins.value
       .split(`,`)
       .map(function(mixin) {
-        return `...${mixin.trim()},`;
+        return `${mixin},`;
       })
       .join(``);
   }
@@ -203,22 +230,21 @@ const transpileDeclarations = function(declarations) {
     })
     .join(``);
 
-  return `
-    ${mixinsStr}
-    ${declarationsStr}
-  `.trim();
-};
+  let transpiledDeclarations;
 
-const transpileChildClasses = function(childRules) {
-  return childRules
-    .map(function(childRule) {
-      return `
-        '&${childRule.selector.replace(/\./g, `$`)}': {
-          ${transpileDeclarations(childRule.declarations)}
-        },
-      `.trim();
-    })
-    .join(``);
+  if (mixinsStr) {
+    transpiledDeclarations = `
+      ${mixinsStr}
+      { ${declarationsStr} },
+    `;
+  } else {
+    transpiledDeclarations = declarationsStr;
+  }
+
+  return {
+    declarations: transpiledDeclarations,
+    usesMixins: Boolean(mixinsStr),
+  };
 };
 
 const transpileRoot = function(root) {
@@ -236,17 +262,50 @@ const transpileRoot = function(root) {
     .join(``);
 };
 
+const transpileChildClasses = function(childRules) {
+  return childRules
+    .map(function(childRule) {
+      const { declarations, usesMixins } = transpileDeclarations(
+        childRule.declarations
+      );
+
+      const selector = `'&${childRule.selector.replace(/\./g, `$`)}'`;
+
+      if (usesMixins) {
+        return `
+          ${selector}: cssToMuiLoaderAssign(
+            {},
+            ${declarations}
+          ),
+        `;
+      }
+
+      return `
+        ${selector}: {
+          ${declarations}
+        },
+      `;
+    })
+    .join(``);
+};
+
 /**
  * Return a string of JavaScript code that presents the given keyframes
  * rule as an entry in a JavaScript object.
  */
 const transpileKeyframes = function(keyframes) {
   const transpiledKeyframes = keyframes.keyframes.map(function(keyframe) {
-    return `
-      '${keyframe.values.join(`,`)}': {
-        ${transpileDeclarations(keyframe.declarations)}
-      },
-    `;
+    const { declarations, usesMixins } = transpileDeclarations(
+      keyframe.declarations
+    );
+
+    const selector = `'${keyframe.values.join(`,`)}'`;
+
+    if (usesMixins) {
+      return `${selector}: cssToMuiLoaderAssign({}, ${declarations}),`;
+    }
+
+    return `${selector}: { ${declarations} },`;
   });
 
   return `
@@ -267,21 +326,36 @@ const transpileRule = function(rule) {
     );
   }
 
-  const selectorStr = rule.selector.replace(/^\./, ``).trim();
-
-  const transpiled = [`'${selectorStr}': {`];
+  let declarations = ``;
+  let childClasses = ``;
+  let usesMixins = false;
 
   if (rule.declarations && rule.declarations.length > 0) {
-    transpiled.push(transpileDeclarations(rule.declarations));
+    ({ declarations, usesMixins } = transpileDeclarations(rule.declarations));
   }
 
   if (rule.childRules && rule.childRules.length > 0) {
-    transpiled.push(transpileChildClasses(rule.childRules));
+    childClasses = transpileChildClasses(rule.childRules);
   }
 
-  transpiled.push(`},`);
+  const selector = `'${rule.selector.replace(/^\./, ``)}'`;
 
-  return transpiled.join(``);
+  if (usesMixins) {
+    return `
+      ${selector}: cssToMuiLoaderAssign(
+        {},
+        ${declarations}
+        { ${childClasses} }
+      ),
+    `;
+  }
+
+  return `
+    ${selector}: {
+      ${declarations}
+      ${childClasses}
+    },
+  `;
 };
 
 /**
@@ -290,7 +364,7 @@ const transpileRule = function(rule) {
  */
 const transpileMedia = function(media) {
   // Matches lines similar to: $(theme.palette.primary.main)
-  const match = /^\$\((.+)\)$/.exec(media.selector.trim());
+  const match = /^\$\((.+)\)$/.exec(media.selector);
 
   if (!match) {
     throw new Error(
@@ -321,14 +395,25 @@ const transpile = function(rules, mediaQueries, keyframes) {
   const transpiledRules = Object.values(rulesWithoutRoot).map(transpileRule);
   const transpiledMedia = Object.values(mediaQueries).map(transpileMedia);
 
+  const transpiledCss = `
+    ${transpileRoot(root)}
+    return {
+      ${transpiledKeyframes.join(``)}
+      ${transpiledRules.join(``)}
+      ${transpiledMedia.join(``)}
+    };
+  `;
+
+  let objectAssignPolyfill = ``;
+
+  if (transpiledCss.includes(`cssToMuiLoaderAssign`)) {
+    objectAssignPolyfill = OBJECT_ASSIGN_POLYFILL;
+  }
+
   return `
     module.exports = function cssToMuiLoader(theme) {
-      ${transpileRoot(root)}
-      return {
-        ${transpiledKeyframes.join(``)}
-        ${transpiledRules.join(``)}
-        ${transpiledMedia.join(``)}
-      };
+      ${objectAssignPolyfill}
+      ${transpiledCss}
     };
   `;
 };
@@ -523,20 +608,5 @@ module.exports = function cssToMuiLoader(source) {
   const mediaQueries = parseMediaQueries(ast.stylesheet.rules);
   const keyframes = parseKeyframes(ast.stylesheet.rules);
 
-  const transpiled = transpile(rules, mediaQueries, keyframes);
-
-  if (process.env.CSS_TO_MUI_TEST) {
-    // Formatting makes test cases easier to understand
-    return require(`prettier`).format(transpiled, {
-      parser: `babylon`,
-      arrowParens: `always`,
-      bracketSpacing: true,
-      semi: true,
-      singleQuote: true,
-      tabWidth: 2,
-      trailingComma: `all`,
-    });
-  }
-
-  return transpiled;
+  return transpile(rules, mediaQueries, keyframes);
 };

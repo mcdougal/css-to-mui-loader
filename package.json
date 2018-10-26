@@ -1,7 +1,7 @@
 {
   "name": "css-to-mui-loader",
   "version": "1.1.0",
-  "description": "Webpack loader for converting CSS to JSS for Material UI",
+  "description": "Webpack loader for using external CSS files with Material UI",
   "keywords": [
     "webpack",
     "loader",
@@ -23,7 +23,7 @@
   "homepage": "https://github.com/mcdougal/css-to-mui-loader#readme",
   "scripts": {
     "lint": "eslint *.js",
-    "test": "CSS_TO_MUI_TEST=1 jest"
+    "test": "jest"
   },
   "devDependencies": {
     "eslint": "^5.5.0",

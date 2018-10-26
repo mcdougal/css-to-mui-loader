@@ -1,7 +1,8 @@
 ## 1.1.1 / Unpublished
 
-- Removed template literals from loader output so the final JS code can run in
-  more environments (like IE)
+- Improved compatibility with older JS environments by removing:
+  - template literals
+  - object rest spread
 - Fixed a bug where comments in keyframes would cause the loader to crash
 
 ## 1.1.0
