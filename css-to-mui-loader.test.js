@@ -889,6 +889,39 @@ module.exports = function cssToMuiLoader(theme) {
   expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
 });
 
+it(`supports keyframes with comments`, () => {
+  const css = `
+@keyframes my-animation {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(-100%);
+    /* transform: translateY(-100%) rotateX(180deg); */
+  }
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    '@keyframes my-animation': {
+      '0%': {
+        transform: 'translateY(-100%)',
+      },
+
+      '100%': {
+        transform: 'translateY(-100%)',
+      },
+    },
+  };
+};
+  `;
+
+  expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
+});
+
 it(`supports media queries that are defined once`, () => {
   const css = `
 .test {

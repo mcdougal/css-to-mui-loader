@@ -193,7 +193,7 @@ const transpileDeclarations = function(declarations) {
 
   const declarationsStr = declarations
     .filter(function(declaration) {
-      return declaration.property !== `-mui-mixins`;
+      return declaration.property && declaration.property !== `-mui-mixins`;
     })
     .map(function(declaration) {
       const property = transpileProperty(declaration.property);
