@@ -22,7 +22,7 @@ it(`works on single rule with single property`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { padding: \`10px\` },
+    test: { padding: '10px' },
   };
 };
   `;
@@ -40,7 +40,69 @@ it(`supports rule names with dashes`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    'test-dash': { padding: \`10px\` },
+    'test-dash': { padding: '10px' },
+  };
+};
+  `;
+
+  expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
+});
+
+it(`works on values with quotes before the end`, () => {
+  const css = `
+.quote-test {
+  font-family: 'Times New Roman', Arial, sans-serif;
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    'quote-test': { fontFamily: "'Times New Roman', Arial, sans-serif" },
+  };
+};
+  `;
+
+  expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
+});
+
+it(`works on values with quotes at the end`, () => {
+  const css = `
+.quote-test::before {
+  content: '';
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    'quote-test': {
+      '&::before': {
+        content: "''",
+      },
+    },
+  };
+};
+  `;
+
+  expect(cssToMuiLoader(css).trim()).toBe(jss.trim());
+});
+
+it(`works on values with newlines`, () => {
+  const css = `
+.test {
+  border-color: transparent transparent transparent
+    $(theme.palette.common.white);
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    test: {
+      borderColor:
+        'transparent transparent transparent     ' + theme.palette.common.white,
+    },
   };
 };
   `;
@@ -70,8 +132,8 @@ it(`works on single rule with multiple selectors`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test1: { padding: \`10px\` },
-    test2: { padding: \`10px\` },
+    test1: { padding: '10px' },
+    test2: { padding: '10px' },
   };
 };
   `;
@@ -90,7 +152,7 @@ it(`works on single rule with multiple properties`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { margin: \`20px\`, padding: \`10px\` },
+    test: { margin: '20px', padding: '10px' },
   };
 };
   `;
@@ -111,7 +173,7 @@ module.exports = function cssToMuiLoader(theme) {
     test2: {},
     test1: {
       '&$test2': {
-        padding: \`10px\`,
+        padding: '10px',
       },
     },
   };
@@ -134,7 +196,7 @@ module.exports = function cssToMuiLoader(theme) {
     test2: {},
     test1: {
       '& $test2': {
-        padding: \`10px\`,
+        padding: '10px',
       },
     },
   };
@@ -156,7 +218,7 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     test1: {
       '& *': {
-        padding: \`10px\`,
+        padding: '10px',
       },
     },
   };
@@ -186,16 +248,16 @@ it(`maintains ordering of properties`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
-      alignItems: \`center\`,
-      backgroundColor: \`$\{theme.palette.gray[200]}\`,
-      borderLeft: \`2px solid transparent\`,
-      display: \`flex\`,
-      flexDirection: \`column\`,
-      fontSize: \`inherit\`,
-      margin: \`20px\`,
-      maxWidth: \`600px\`,
-      padding: \`10px\`,
-      whiteSpace: \`nowrap\`,
+      alignItems: 'center',
+      backgroundColor: theme.palette.gray[200],
+      borderLeft: '2px solid transparent',
+      display: 'flex',
+      flexDirection: 'column',
+      fontSize: 'inherit',
+      margin: '20px',
+      maxWidth: '600px',
+      padding: '10px',
+      whiteSpace: 'nowrap',
     },
   };
 };
@@ -220,8 +282,8 @@ it(`works on multiple rules with multiple properties`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test1: { margin: \`20px\`, padding: \`10px\` },
-    test2: { background: \`red\`, color: \`blue\` },
+    test1: { margin: '20px', padding: '10px' },
+    test2: { background: 'red', color: 'blue' },
   };
 };
   `;
@@ -244,7 +306,7 @@ it(`combines declarations from the same rule defined multiple times`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { margin: \`20px\`, background: \`red\`, margin: \`25px\` },
+    test: { margin: '20px', background: 'red', margin: '25px' },
   };
 };
   `;
@@ -267,7 +329,7 @@ it(`ignores top-level comments`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { padding: \`10px\` },
+    test: { padding: '10px' },
   };
 };
   `;
@@ -290,7 +352,7 @@ it(`ignores nested comments`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { padding: \`10px\` },
+    test: { padding: '10px' },
   };
 };
   `;
@@ -308,7 +370,7 @@ it(`ignores inline comments`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { padding: \`10px\` },
+    test: { padding: '10px' },
   };
 };
   `;
@@ -326,7 +388,7 @@ it(`converts hyphens to camelCase`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { textAlign: \`center\` },
+    test: { textAlign: 'center' },
   };
 };
   `;
@@ -344,7 +406,7 @@ it(`converts custom units for single positive integer value`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { padding: \`$\{theme.spacing.unit * 10}px\` },
+    test: { padding: theme.spacing.unit * 10 + 'px' },
   };
 };
   `;
@@ -362,7 +424,7 @@ it(`converts custom units for single negative integer value`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { padding: \`$\{theme.spacing.unit * -10}px\` },
+    test: { padding: theme.spacing.unit * -10 + 'px' },
   };
 };
   `;
@@ -393,8 +455,18 @@ it(`converts custom units for multiple values`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
-      padding: \`$\{theme.spacing.unit * 11}px $\{theme.spacing.unit *
-        12}px $\{theme.spacing.unit * 13}px $\{theme.spacing.unit * 14}px\`,
+      padding:
+        theme.spacing.unit * 11 +
+        'px' +
+        ' ' +
+        theme.spacing.unit * 12 +
+        'px' +
+        ' ' +
+        theme.spacing.unit * 13 +
+        'px' +
+        ' ' +
+        theme.spacing.unit * 14 +
+        'px',
     },
   };
 };
@@ -413,7 +485,7 @@ it(`converts custom units when one value is 0`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { padding: \`0 $\{theme.spacing.unit * 2}px\` },
+    test: { padding: '0 ' + theme.spacing.unit * 2 + 'px' },
   };
 };
   `;
@@ -431,7 +503,7 @@ it(`does not convert custom units when the only value is 0`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { padding: \`0\` },
+    test: { padding: '0' },
   };
 };
   `;
@@ -449,7 +521,7 @@ it(`supports mixing custom units with builtin units`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { padding: \`11px 1rem 0 $\{theme.spacing.unit * 10}px\` },
+    test: { padding: '11px 1rem 0 ' + theme.spacing.unit * 10 + 'px' },
   };
 };
   `;
@@ -467,7 +539,7 @@ it(`works when custom units are defined inside a transform`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { transform: \`translate($\{theme.spacing.unit * -3}px)\` },
+    test: { transform: 'translate(' + theme.spacing.unit * -3 + 'px' + ')' },
   };
 };
   `;
@@ -485,7 +557,7 @@ it(`provides an escape hatch for running JS code`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { color: \`$\{theme.palette.primary.main}\` },
+    test: { color: theme.palette.primary.main },
   };
 };
   `;
@@ -503,7 +575,7 @@ it(`supports JS escape hatch if it's not the only thing on the line`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { transition: \`max-width $\{theme.transitions.standard}\` },
+    test: { transition: 'max-width ' + theme.transitions.standard },
   };
 };
   `;
@@ -522,7 +594,7 @@ it(`supports JS escape hatch with nested parens`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
-      border: \`1px solid $\{theme.utils.rgba(theme.palette.primary, 0.2)}\`,
+      border: '1px solid ' + theme.utils.rgba(theme.palette.primary, 0.2),
     },
   };
 };
@@ -544,9 +616,9 @@ it(`supports CSS variables with basic values`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  const myColor = \`blue\`;
+  const myColor = 'blue';
   return {
-    test: { background: \`$\{myColor}\` },
+    test: { background: myColor },
   };
 };
   `;
@@ -567,9 +639,9 @@ it(`supports CSS variables with custom units`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  const commonPadding = \`$\{theme.spacing.unit * 10}px\`;
+  const commonPadding = theme.spacing.unit * 10 + 'px';
   return {
-    test: { padding: \`$\{commonPadding}\` },
+    test: { padding: commonPadding },
   };
 };
   `;
@@ -590,9 +662,9 @@ it(`supports CSS variables with JS`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  const myColor = \`$\{theme.palette.gray[200]}\`;
+  const myColor = theme.palette.gray[200];
   return {
-    test: { color: \`$\{myColor}\` },
+    test: { color: myColor },
   };
 };
   `;
@@ -613,9 +685,9 @@ it(`supports CSS variables mixed with JS escape hatch`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  const transitionProp = \`max-width\`;
+  const transitionProp = 'max-width';
   return {
-    test: { transition: \`$\{transitionProp} $\{theme.transitions.standard}\` },
+    test: { transition: transitionProp + ' ' + theme.transitions.standard },
   };
 };
   `;
@@ -638,10 +710,10 @@ it(`supports multiple CSS variables`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  const myColor = \`$\{theme.palette.gray[200]}\`;
-  const myPadding = \`$\{theme.spacing.unit * 2}px\`;
+  const myColor = theme.palette.gray[200];
+  const myPadding = theme.spacing.unit * 2 + 'px';
   return {
-    test: { color: \`$\{myColor}\`, padding: \`$\{myPadding}\` },
+    test: { color: myColor, padding: myPadding },
   };
 };
   `;
@@ -662,9 +734,12 @@ it(`supports mix of CSS variables, JS escape hatch and custom units`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  const p = \`$\{theme.spacing.unit * 1}px\`;
+  const p = theme.spacing.unit * 1 + 'px';
   return {
-    test: { padding: \`1px $\{theme.spacing.unit * 2}px $\{p} $\{theme.p}px\` },
+    test: {
+      padding:
+        '1px ' + theme.spacing.unit * 2 + 'px' + ' ' + p + ' ' + theme.p + 'px',
+    },
   };
 };
   `;
@@ -685,11 +760,11 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     '@keyframes my-animation': {
       '0%': {
-        background: \`$\{theme.palette.common.white}\`,
+        background: theme.palette.common.white,
       },
 
       '100%': {
-        background: \`$\{theme.palette.common.black}\`,
+        background: theme.palette.common.black,
       },
     },
   };
@@ -712,11 +787,11 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     '@keyframes my-animation': {
       '0%,75%': {
-        background: \`$\{theme.palette.common.white}\`,
+        background: theme.palette.common.white,
       },
 
       '25%,90%,100%': {
-        background: \`$\{theme.palette.common.black}\`,
+        background: theme.palette.common.black,
       },
     },
   };
@@ -746,13 +821,13 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     '@keyframes my-animation': {
       '0%': {
-        background: \`$\{theme.palette.common.white}\`,
-        padding: \`$\{theme.spacing.unit * 1}px\`,
+        background: theme.palette.common.white,
+        padding: theme.spacing.unit * 1 + 'px',
       },
 
       '100%': {
-        background: \`$\{theme.palette.common.black}\`,
-        padding: \`$\{theme.spacing.unit * 2}px\`,
+        background: theme.palette.common.black,
+        padding: theme.spacing.unit * 2 + 'px',
       },
     },
   };
@@ -777,7 +852,7 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     '@keyframes my-animation': {
       '100%': {
-        background: \`$\{theme.palette.common.black}\`,
+        background: theme.palette.common.black,
       },
     },
   };
@@ -800,11 +875,11 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     '@-webkit-keyframes my-animation': {
       '0%': {
-        opacity: \`0\`,
+        opacity: '0',
       },
 
       '100%': {
-        opacity: \`1\`,
+        opacity: '1',
       },
     },
   };
@@ -830,10 +905,10 @@ it(`supports media queries that are defined once`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test: { padding: \`20px\` },
+    test: { padding: '20px' },
 
     [theme.breakpoints.down('xs')]: {
-      test: { padding: \`5px\` },
+      test: { padding: '5px' },
     },
   };
 };
@@ -874,12 +949,12 @@ it(`supports media queries that are defined more than once`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   return {
-    test1: { padding: \`20px\` },
-    test2: { padding: \`50px\` },
+    test1: { padding: '20px' },
+    test2: { padding: '50px' },
 
     [theme.breakpoints.down('xs')]: {
-      test1: { padding: \`5px\`, margin: \`0\` },
-      test2: { padding: \`10px\` },
+      test1: { padding: '5px', margin: '0' },
+      test2: { padding: '10px' },
     },
   };
 };
@@ -923,11 +998,11 @@ it(`supports pseudo-classes on base class`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
-      background: \`green\`,
-      color: \`red\`,
+      background: 'green',
+      color: 'red',
       '&:hover': {
-        background: \`pink\`,
-        color: \`blue\`,
+        background: 'pink',
+        color: 'blue',
       },
     },
   };
@@ -954,11 +1029,11 @@ it(`supports pseudo-classes before base class`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
-      background: \`green\`,
-      color: \`red\`,
+      background: 'green',
+      color: 'red',
       '&:hover': {
-        background: \`pink\`,
-        color: \`blue\`,
+        background: 'pink',
+        color: 'blue',
       },
     },
   };
@@ -980,7 +1055,7 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
       '&:hover': {
-        background: \`pink\`,
+        background: 'pink',
       },
     },
   };
@@ -1002,7 +1077,7 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
       '&:nth-child(2):hover': {
-        background: \`pink\`,
+        background: 'pink',
       },
     },
   };
@@ -1024,10 +1099,10 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
       '&:hover': {
-        background: \`pink\`,
+        background: 'pink',
       },
       '&:focus': {
-        background: \`pink\`,
+        background: 'pink',
       },
     },
   };
@@ -1055,14 +1130,14 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
       '&:hover': {
-        background: \`pink\`,
+        background: 'pink',
       },
     },
 
     [theme.breakpoints.down('xs')]: {
       test: {
         '&:hover': {
-          background: \`pink\`,
+          background: 'pink',
         },
       },
     },
@@ -1087,7 +1162,7 @@ module.exports = function cssToMuiLoader(theme) {
     test3: {},
     test1: {
       '&$test2 $test3:hover': {
-        padding: \`10px\`,
+        padding: '10px',
       },
     },
   };
@@ -1111,8 +1186,8 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
       ...theme.mixins.customMixin,
-      border: \`1px solid red\`,
-      padding: \`10px\`,
+      border: '1px solid red',
+      padding: '10px',
     },
   };
 };
@@ -1137,8 +1212,8 @@ module.exports = function cssToMuiLoader(theme) {
       ...theme.mixins.mixin1,
       ...theme.mixins.mixin2,
       ...theme.mixins.mixin3,
-      border: \`1px solid red\`,
-      padding: \`10px\`,
+      border: '1px solid red',
+      padding: '10px',
     },
   };
 };

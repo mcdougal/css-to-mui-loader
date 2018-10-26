@@ -1,33 +1,58 @@
 const css = require(`css`);
 
+/**
+ * CSS properties need to be converted to camelCase to work with JSS. We also
+ * may need to convert user-defined variables to camelCase so they can be used
+ * as JavaScript variables.
+ */
 const hyphenToCamelCase = function(s) {
   return s.replace(/-([a-z])/g, function(g) {
     return g[1].toUpperCase();
   });
 };
 
+/**
+ * Convert a custom CSS variable name into a valid JavaScript variable name.
+ */
 const transpileCustomVariableName = function(variable) {
   return hyphenToCamelCase(variable.replace(/^--/, ``));
 };
 
+/**
+ * Convert a CSS property (e.g. background-color) into its JSS equivalent
+ * (e.g. backgroundColor).
+ */
 const transpileProperty = function(property) {
-  return `'${hyphenToCamelCase(property)}'`;
+  return hyphenToCamelCase(property);
 };
 
+/**
+ * If the given string starts with a Material UI "spacing unit" value
+ * (e.g. 10su), return a transpiled version of the unit and the number of
+ * characters used by the value in the original string.
+ *
+ * Example: The string '10su 5su' will parse the '10su' and return:
+ * {
+ *   newValue: `(theme.spacing.unit * 10) + 'px'`,
+ *   offset: 4, // # of chars in '10su'
+ * }
+ */
 const consumeCustomUnit = function(s) {
   const cuIndex = s.indexOf(`su`);
 
   if (cuIndex !== -1) {
-    const part = s.slice(0, cuIndex);
+    const value = s.slice(0, cuIndex);
 
-    if (part.search(/^-?[\d.]+$/) !== -1) {
-      if (part.indexOf(`.`) !== -1) {
-        throw new Error(`Custom units cannot be fractions, received: ${part}u`);
+    if (value.search(/^-?[\d.]+$/) !== -1) {
+      if (value.indexOf(`.`) !== -1) {
+        throw new Error(
+          `Custom units cannot be fractions, received: ${value}su`
+        );
       }
 
       return {
-        newValue: `$\{theme.spacing.unit * ${part}}px`,
-        offset: part.length + 2, // Also consume the 'su'
+        newValue: `(theme.spacing.unit * ${value}) + 'px'`,
+        offset: value.length + 2, // Also consume the 'su'
       };
     }
   }
@@ -35,6 +60,18 @@ const consumeCustomUnit = function(s) {
   return null;
 };
 
+/**
+ * If the given string starts with a CSS variable (e.g. var(--my-var)), return
+ * a transpiled variable name and the number of characters used by the variable
+ * in the original string.
+ *
+ * Example: The string 'var(--my-var) .2s ease-in-out' will parse the
+ * 'var(--my-var)' and return:
+ * {
+ *   newValue: myVar,
+ *   offset: 13, // # of chars in 'var(--my-var)'
+ * }
+ */
 const consumeCssVariable = function(s) {
   if (s.startsWith(`var(`) && s.indexOf(`)`) !== -1) {
     const part = s.slice(0, s.indexOf(`)`) + 1);
@@ -44,7 +81,7 @@ const consumeCssVariable = function(s) {
       .trim();
 
     return {
-      newValue: `$\{${transpileCustomVariableName(varName)}}`,
+      newValue: transpileCustomVariableName(varName),
       offset: part.length,
     };
   }
@@ -52,6 +89,18 @@ const consumeCssVariable = function(s) {
   return null;
 };
 
+/**
+ * If the given string starts with a JavaScript "escape hatch"
+ * (e.g. $(theme.palette.colors.white)), return a transpiled version of the
+ * JavaScript and the number of characters used by the JS code in the original
+ * string.
+ *
+ * Example: The string '$(theme.palette.colors.white)' will return:
+ * {
+ *   newValue: theme.palette.colors.white,
+ *   offset: 29, // # of chars in '$(theme.palette.colors.white)'
+ * }
+ */
 const consumeJsEscapeHatch = function(s) {
   if (s.startsWith(`$(`)) {
     let remaining = s.slice(2);
@@ -69,7 +118,7 @@ const consumeJsEscapeHatch = function(s) {
 
     if (parenCount === 0 || remaining.length > 0) {
       const offset = s.length - remaining.length;
-      const newValue = `$\{${s.slice(2, offset - 1)}}`;
+      const newValue = s.slice(2, offset - 1);
 
       return {
         newValue: newValue,
@@ -81,38 +130,49 @@ const consumeJsEscapeHatch = function(s) {
   return null;
 };
 
+/**
+ * Convert any CSS value into a string of equivalent JS code.
+ */
 const transpileValue = function(value) {
-  let newValue = ``;
+  const newValue = [];
   let remaining = value;
-
-  const consume = function(func) {
-    const result = func(remaining);
-
-    if (result) {
-      newValue += result.newValue;
-      remaining = remaining.slice(result.offset);
-      return true;
-    }
-
-    return false;
-  };
+  let currStr = ``;
 
   while (remaining.length > 0) {
-    const consumeFuncs = [
-      consumeCustomUnit,
-      consumeCssVariable,
-      consumeJsEscapeHatch,
-    ];
+    let result = consumeCustomUnit(remaining);
 
-    const success = consumeFuncs.some(consume);
+    if (!result) {
+      result = consumeCssVariable(remaining);
+    }
 
-    if (!success) {
-      newValue += remaining[0];
+    if (!result) {
+      result = consumeJsEscapeHatch(remaining);
+    }
+
+    if (!result) {
+      // Consume another character
+      currStr += remaining[0];
       remaining = remaining.slice(1);
+    } else {
+      // Add the current string to the new value array
+      if (currStr) {
+        const safeStr = currStr.replace(/'/g, `\\'`).replace(/\n/g, ` `);
+        newValue.push(`'${safeStr}'`);
+        currStr = ``;
+      }
+
+      // Add the consumed value to the new value array
+      newValue.push(result.newValue);
+      remaining = remaining.slice(result.offset);
     }
   }
 
-  return `\`${newValue}\``;
+  if (currStr) {
+    const safeStr = currStr.replace(/'/g, `\\'`).replace(/\n/g, ` `);
+    newValue.push(`'${safeStr}'`);
+  }
+
+  return newValue.join(`+`);
 };
 
 const transpileDeclarations = function(declarations) {
@@ -139,7 +199,7 @@ const transpileDeclarations = function(declarations) {
       const property = transpileProperty(declaration.property);
       const value = transpileValue(declaration.value);
 
-      return `${property}: ${value},`;
+      return `'${property}': ${value},`;
     })
     .join(``);
 

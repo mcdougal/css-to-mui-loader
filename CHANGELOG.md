@@ -1,3 +1,11 @@
+1.1.1 / Unpublished
+===================
+
+**Bug fixes:**
+
+* Removed template literals from loader output so the final JS code can run in
+  more environments (like IE)
+
 1.1.0 / 2018-09-22
 ==================
 
