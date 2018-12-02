@@ -1,3 +1,25 @@
+## 1.3.0
+###### Dec 2, 2018
+
+- `babel-loader` is no longer required. Instead of this:
+  ```js
+  rules: [
+    {
+      test: /\.css$/,
+      use: [ 'babel-loader', 'css-to-mui-loader' ]
+    }
+  ]
+  ```
+  you can now just do this:
+  ```js
+  rules: [
+    {
+      test: /\.css$/,
+      use: [ 'css-to-mui-loader' ]
+    }
+  ]
+  ```
+
 ## 1.2.1
 ###### Oct 26, 2018
 
