@@ -1,3 +1,9 @@
+## 1.3.1
+###### Dec 2, 2018
+
+- Added link to [css-to-mui-loader-example](https://github.com/mcdougal/css-to-mui-loader-example) demo repo in README
+- Added MIT license file
+
 ## 1.3.0
 ###### Dec 2, 2018
 
