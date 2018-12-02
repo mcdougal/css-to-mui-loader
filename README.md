@@ -3,7 +3,7 @@
 
 Webpack loader for using external CSS files with [Material UI](https://github.com/mui-org/material-ui).
 
-[Install](#install) | [Usage](#usage) | [Description](#description) | [Features](#features) | [Linting](#linting) | [Help out](#help-out)
+[Install](#install) | [Usage](#usage) | [Description](#description) | [Features](#features) | [Demo](#demo) | [Linting](#linting) | [Help out](#help-out)
 
 ## Install
 
@@ -128,6 +128,10 @@ Supports keyframes
 
 If you want to know what the loader output looks like,
 [take a look at the tests](/css-to-mui-loader.test.js).
+
+## Demo
+
+Check out the [css-to-mui-loader-example](https://github.com/mcdougal/css-to-mui-loader-example) repository for a bare-bones demo bootstrapped with [create-react-app](https://github.com/facebook/create-react-app).
 
 ## Linting
 
