@@ -1101,16 +1101,17 @@ it(`supports media queries that are defined once`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  return {
+  var output = {
     test: {
       padding: '20px',
     },
-    [theme.breakpoints.down('xs')]: {
-      test: {
-        padding: '5px',
-      },
+  };
+  output[theme.breakpoints.down('xs')] = {
+    test: {
+      padding: '5px',
     },
   };
+  return output;
 };
   `;
 
@@ -1148,23 +1149,67 @@ it(`supports media queries that are defined more than once`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  return {
+  var output = {
     test1: {
       padding: '20px',
     },
     test2: {
       padding: '50px',
     },
-    [theme.breakpoints.down('xs')]: {
-      test1: {
-        padding: '5px',
-        margin: '0',
-      },
-      test2: {
-        padding: '10px',
-      },
+  };
+  output[theme.breakpoints.down('xs')] = {
+    test1: {
+      padding: '5px',
+      margin: '0',
+    },
+    test2: {
+      padding: '10px',
     },
   };
+  return output;
+};
+  `;
+
+  expect(runLoader(css)).toBe(jss.trim());
+});
+
+it(`supports multiple media queries`, () => {
+  const css = `
+.test {
+  padding: 20px;
+}
+
+@media $(theme.breakpoints.down('sm')) {
+  .test {
+    padding: 10px;
+  }
+}
+
+@media $(theme.breakpoints.down('xs')) {
+  .test {
+    padding: 5px;
+  }
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  var output = {
+    test: {
+      padding: '20px',
+    },
+  };
+  output[theme.breakpoints.down('sm')] = {
+    test: {
+      padding: '10px',
+    },
+  };
+  output[theme.breakpoints.down('xs')] = {
+    test: {
+      padding: '5px',
+    },
+  };
+  return output;
 };
   `;
 
@@ -1335,20 +1380,21 @@ it(`supports pseudo-classes inside media queries`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  return {
+  var output = {
     test: {
       '&:hover': {
         background: 'pink',
       },
     },
-    [theme.breakpoints.down('xs')]: {
-      test: {
-        '&:hover': {
-          background: 'pink',
-        },
+  };
+  output[theme.breakpoints.down('xs')] = {
+    test: {
+      '&:hover': {
+        background: 'pink',
       },
     },
   };
+  return output;
 };
   `;
 
@@ -1516,16 +1562,16 @@ it(`supports mixins inside media queries`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   ${OBJECT_ASSIGN_POLYFILL.trim()}
-  return {
-    [theme.breakpoints.down('xs')]: {
-      test: cssToMuiLoaderAssign(
-        {},
-        theme.mixins.customMixin,
-        {},
-        {},
-      ),
-    },
+  var output = {};
+  output[theme.breakpoints.down('xs')] = {
+    test: cssToMuiLoaderAssign(
+      {},
+      theme.mixins.customMixin,
+      {},
+      {},
+    ),
   };
+  return output;
 };
   `;
 
@@ -1551,25 +1597,25 @@ it(`supports mixins, properties and children inside media queries`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   ${OBJECT_ASSIGN_POLYFILL.trim()}
-  return {
-    [theme.breakpoints.down('xs')]: {
-      test: cssToMuiLoaderAssign(
-        {},
-        theme.mixins.customMixin,
-        { width: theme.spacing.unit * 10 + 'px' },
-        {
-          '&::after': cssToMuiLoaderAssign(
-            {},
-            theme.mixins.customMixin,
-            {
-              background: theme.palette.primary.main,
-              content: '"we\\'re testing"',
-            },
-          ),
-        },
-      ),
-    },
+  var output = {};
+  output[theme.breakpoints.down('xs')] = {
+    test: cssToMuiLoaderAssign(
+      {},
+      theme.mixins.customMixin,
+      { width: theme.spacing.unit * 10 + 'px' },
+      {
+        '&::after': cssToMuiLoaderAssign(
+          {},
+          theme.mixins.customMixin,
+          {
+            background: theme.palette.primary.main,
+            content: '"we\\'re testing"',
+          },
+        ),
+      },
+    ),
   };
+  return output;
 };
   `;
 

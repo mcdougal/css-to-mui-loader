@@ -376,9 +376,9 @@ const transpileMedia = function(media) {
   const transpiledRules = Object.values(media.rules).map(transpileRule);
 
   return `
-    [${match[1]}]: {
+    output[${match[1]}] = {
       ${transpiledRules.join(``)}
-    },
+    };
   `;
 };
 
@@ -395,14 +395,29 @@ const transpile = function(rules, mediaQueries, keyframes) {
   const transpiledRules = Object.values(rulesWithoutRoot).map(transpileRule);
   const transpiledMedia = Object.values(mediaQueries).map(transpileMedia);
 
-  const transpiledCss = `
-    ${transpileRoot(root)}
-    return {
-      ${transpiledKeyframes.join(``)}
-      ${transpiledRules.join(``)}
+  let transpiledCss;
+
+  if (transpiledMedia.length > 0) {
+    transpiledCss = `
+      ${transpileRoot(root)}
+      var output = {
+        ${transpiledKeyframes.join(``)}
+        ${transpiledRules.join(``)}
+      };
+
       ${transpiledMedia.join(``)}
-    };
-  `;
+
+      return output;
+    `;
+  } else {
+    transpiledCss = `
+      ${transpileRoot(root)}
+      return {
+        ${transpiledKeyframes.join(``)}
+        ${transpiledRules.join(``)}
+      };
+    `;
+  }
 
   let objectAssignPolyfill = ``;
 
