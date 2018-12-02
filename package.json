@@ -23,7 +23,8 @@
   "homepage": "https://github.com/mcdougal/css-to-mui-loader#readme",
   "scripts": {
     "lint": "eslint *.js",
-    "test": "jest"
+    "test": "jest",
+    "check": "npm-check --skip-unused"
   },
   "devDependencies": {
     "eslint": "^5.5.0",
@@ -32,6 +33,7 @@
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-prettier": "^2.6.2",
     "jest": "^23.5.0",
+    "npm-check": "^5.9.0",
     "prettier": "^1.14.2"
   },
   "dependencies": {
