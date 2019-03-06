@@ -29,7 +29,7 @@ const OBJECT_ASSIGN_POLYFILL = `
 const runLoader = (css) => {
   return prettier
     .format(cssToMuiLoader(css), {
-      parser: `babylon`,
+      parser: `babel`,
       arrowParens: `always`,
       bracketSpacing: true,
       semi: true,
