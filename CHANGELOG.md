@@ -1,3 +1,8 @@
+## 1.3.2
+###### Mar 5, 2019
+
+- Upgraded devDependencies
+
 ## 1.3.1
 ###### Dec 2, 2018
 
