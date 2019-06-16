@@ -1,6 +1,6 @@
 {
   "name": "css-to-mui-loader",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Webpack loader for using external CSS files with Material UI",
   "keywords": [
     "webpack",
