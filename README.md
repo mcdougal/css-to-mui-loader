@@ -11,6 +11,18 @@ Webpack loader for using external CSS files with [Material UI](https://github.co
 npm install css-to-mui-loader
 ```
 
+#### Dependency version support:
+
+##### material-ui
+
+- css-to-mui-loader@2.0.0 and up supports material-ui v4
+- css-to-mui-loader@1.3.3 and down supports material-ui v3
+
+##### jss
+
+- css-to-mui-loader@2.0.1 and up supports jss v10
+- css-to-mui-loader@1.3.3 and down supports jss v9
+
 ## Usage
 
 **styles.css**

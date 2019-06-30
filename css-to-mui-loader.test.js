@@ -934,6 +934,48 @@ module.exports = function cssToMuiLoader(theme) {
   expect(runLoader(css)).toBe(jss.trim());
 });
 
+it(`supports locally scoped keyframe names with animation shorthand`, () => {
+  const css = `
+.test {
+  animation: my-animation 1s ease-in-out;
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    test: {
+      animation: '$my-animation 1s ease-in-out',
+    },
+  };
+};
+  `;
+
+  expect(runLoader(css)).toBe(jss.trim());
+});
+
+it(`supports locally scoped keyframe names with animation name`, () => {
+  const css = `
+.test {
+  animation-duration: 1s;
+  animation-name: my-animation;
+}
+  `;
+
+  const jss = `
+module.exports = function cssToMuiLoader(theme) {
+  return {
+    test: {
+      animationDuration: '1s',
+      animationName: '$my-animation',
+    },
+  };
+};
+  `;
+
+  expect(runLoader(css)).toBe(jss.trim());
+});
+
 it(`supports basic keyframes`, () => {
   const css = `
 @keyframes my-animation {

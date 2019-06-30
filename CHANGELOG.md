@@ -1,9 +1,16 @@
+## 2.0.1
+###### Jun 29, 2019
+
+**NOTE: This version of css-to-mui-loader fixes keyframe animations for jss@10.0.0**
+
+- Fix animation names to support jss@10.0.0-alpha.1. This version of jss switched `@keyframes` to be [scoped by default](https://github.com/cssinjs/jss/blob/master/changelog.md#breaking-changes-2). @material-ui/styles has been using jss@10 [for some time](https://github.com/mui-org/material-ui/blob/master/CHANGELOG.md#material-uistylesv300-alpha5).
+
 ## 2.0.0
 ###### Jun 29, 2019
 
-**BREAKING CHANGES:**
+**BREAKING CHANGES: css-to-mui-loader now only supports @materia-ui/core@4.0.0 and up**
 
-- Switch to new Material UI `theme.spacing()` API, introduced in @material-ui/core@4.0.0
+- Switch to new Material UI `theme.spacing()` API, [introduced](https://github.com/mui-org/material-ui/blob/master/CHANGELOG.md#deprecation) in @material-ui/core@4.0.0
 
 ## 1.3.3
 ###### Jun 16, 2019

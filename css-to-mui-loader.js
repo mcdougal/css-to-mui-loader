@@ -160,7 +160,7 @@ const consumeJsEscapeHatch = function(s) {
 /**
  * Convert any CSS value into a string of equivalent JS code.
  */
-const transpileValue = function(value) {
+const transpileValue = function(value, property) {
   const newValue = [];
   let remaining = value;
   let currStr = ``;
@@ -183,7 +183,11 @@ const transpileValue = function(value) {
     } else {
       // Add the current string to the new value array
       if (currStr) {
-        const safeStr = currStr.replace(/'/g, `\\'`).replace(/\n/g, ` `);
+        let safeStr = currStr.replace(/'/g, `\\'`).replace(/\n/g, ` `);
+        if (property === `animation` || property === `animationName`) {
+          // JSS syntax for using locally scoped animation name
+          safeStr = `$${safeStr}`;
+        }
         newValue.push(`'${safeStr}'`);
         currStr = ``;
       }
@@ -195,7 +199,11 @@ const transpileValue = function(value) {
   }
 
   if (currStr) {
-    const safeStr = currStr.replace(/'/g, `\\'`).replace(/\n/g, ` `);
+    let safeStr = currStr.replace(/'/g, `\\'`).replace(/\n/g, ` `);
+    if (property === `animation` || property === `animationName`) {
+      // JSS syntax for using locally scoped animation name
+      safeStr = `$${safeStr}`;
+    }
     newValue.push(`'${safeStr}'`);
   }
 
@@ -224,7 +232,7 @@ const transpileDeclarations = function(declarations) {
     })
     .map(function(declaration) {
       const property = transpileProperty(declaration.property);
-      const value = transpileValue(declaration.value);
+      const value = transpileValue(declaration.value, property);
 
       return `'${property}': ${value},`;
     })
