@@ -567,7 +567,7 @@ it(`converts custom units for single positive integer value`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
-      padding: theme.spacing.unit * 10 + 'px',
+      padding: theme.spacing(10) + 'px',
     },
   };
 };
@@ -587,7 +587,7 @@ it(`converts custom units for single negative integer value`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
-      padding: theme.spacing.unit * -10 + 'px',
+      padding: theme.spacing(-10) + 'px',
     },
   };
 };
@@ -620,16 +620,16 @@ module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
       padding:
-        theme.spacing.unit * 11 +
+        theme.spacing(11) +
         'px' +
         ' ' +
-        theme.spacing.unit * 12 +
+        theme.spacing(12) +
         'px' +
         ' ' +
-        theme.spacing.unit * 13 +
+        theme.spacing(13) +
         'px' +
         ' ' +
-        theme.spacing.unit * 14 +
+        theme.spacing(14) +
         'px',
     },
   };
@@ -650,7 +650,7 @@ it(`converts custom units when one value is 0`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
-      padding: '0 ' + theme.spacing.unit * 2 + 'px',
+      padding: '0 ' + theme.spacing(2) + 'px',
     },
   };
 };
@@ -690,7 +690,7 @@ it(`supports mixing custom units with builtin units`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
-      padding: '11px 1rem 0 ' + theme.spacing.unit * 10 + 'px',
+      padding: '11px 1rem 0 ' + theme.spacing(10) + 'px',
     },
   };
 };
@@ -710,7 +710,7 @@ it(`works when custom units are defined inside a transform`, () => {
 module.exports = function cssToMuiLoader(theme) {
   return {
     test: {
-      transform: 'translate(' + theme.spacing.unit * -3 + 'px' + ')',
+      transform: 'translate(' + theme.spacing(-3) + 'px' + ')',
     },
   };
 };
@@ -817,7 +817,7 @@ it(`supports CSS variables with custom units`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  const commonPadding = theme.spacing.unit * 10 + 'px';
+  const commonPadding = theme.spacing(10) + 'px';
   return {
     test: {
       padding: commonPadding,
@@ -895,7 +895,7 @@ it(`supports multiple CSS variables`, () => {
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
   const myColor = theme.palette.gray[200];
-  const myPadding = theme.spacing.unit * 2 + 'px';
+  const myPadding = theme.spacing(2) + 'px';
   return {
     test: {
       color: myColor,
@@ -921,11 +921,11 @@ it(`supports mix of CSS variables, JS escape hatch and custom units`, () => {
 
   const jss = `
 module.exports = function cssToMuiLoader(theme) {
-  const p = theme.spacing.unit * 1 + 'px';
+  const p = theme.spacing(1) + 'px';
   return {
     test: {
       padding:
-        '1px ' + theme.spacing.unit * 2 + 'px' + ' ' + p + ' ' + theme.p + 'px',
+        '1px ' + theme.spacing(2) + 'px' + ' ' + p + ' ' + theme.p + 'px',
     },
   };
 };
@@ -999,11 +999,11 @@ module.exports = function cssToMuiLoader(theme) {
     '@keyframes my-animation': {
       '0%': {
         background: theme.palette.common.white,
-        padding: theme.spacing.unit * 1 + 'px',
+        padding: theme.spacing(1) + 'px',
       },
       '100%': {
         background: theme.palette.common.black,
-        padding: theme.spacing.unit * 2 + 'px',
+        padding: theme.spacing(2) + 'px',
       },
     },
   };
@@ -1532,7 +1532,7 @@ module.exports = function cssToMuiLoader(theme) {
         '& $test2:hover': cssToMuiLoaderAssign(
           {},
           theme.mixins.customMixin2,
-          { padding: theme.spacing.unit * 1 + 'px' },
+          { padding: theme.spacing(1) + 'px' },
         ),
         '& $test3:hover': cssToMuiLoaderAssign(
           {},
@@ -1602,7 +1602,7 @@ module.exports = function cssToMuiLoader(theme) {
     test: cssToMuiLoaderAssign(
       {},
       theme.mixins.customMixin,
-      { width: theme.spacing.unit * 10 + 'px' },
+      { width: theme.spacing(10) + 'px' },
       {
         '&::after': cssToMuiLoaderAssign(
           {},

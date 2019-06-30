@@ -63,7 +63,7 @@ const transpileProperty = function(property) {
  *
  * Example: The string '10su 5su' will parse the '10su' and return:
  * {
- *   newValue: `(theme.spacing.unit * 10) + 'px'`,
+ *   newValue: `theme.spacing(10) + 'px'`,
  *   offset: 4, // # of chars in '10su'
  * }
  */
@@ -81,7 +81,7 @@ const consumeCustomUnit = function(s) {
       }
 
       return {
-        newValue: `(theme.spacing.unit * ${value}) + 'px'`,
+        newValue: `theme.spacing(${value}) + 'px'`,
         offset: value.length + 2, // Also consume the 'su'
       };
     }

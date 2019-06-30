@@ -1,3 +1,10 @@
+## 2.0.0
+###### Jun 29, 2019
+
+**BREAKING CHANGES:**
+
+- Switch to new Material UI `theme.spacing()` API, introduced in @material-ui/core@4.0.0
+
 ## 1.3.3
 ###### Jun 16, 2019
 
