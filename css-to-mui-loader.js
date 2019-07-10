@@ -283,7 +283,7 @@ const transpileChildClasses = function(childRules) {
         return `
           ${selector}: cssToMuiLoaderAssign(
             {},
-            ${declarations}
+            ${declarations.replace(/,[\n ]*$/, ``)}
           ),
         `;
       }
@@ -310,7 +310,8 @@ const transpileKeyframes = function(keyframes) {
     const selector = `'${keyframe.values.join(`,`)}'`;
 
     if (usesMixins) {
-      return `${selector}: cssToMuiLoaderAssign({}, ${declarations}),`;
+      const declarationsStr = declarations.replace(/,[\n ]*$/, ``);
+      return `${selector}: cssToMuiLoaderAssign({}, ${declarationsStr}),`;
     }
 
     return `${selector}: { ${declarations} },`;
