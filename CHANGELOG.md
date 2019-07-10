@@ -1,3 +1,9 @@
+## 2.0.2
+###### Jul 10, 2019
+
+- Fixed bug where `-mui-mixins` would include a trailing comma after the last function argument, which breaks in IE11
+- Bump eslint versions
+
 ## 2.0.1
 ###### Jun 29, 2019
 
